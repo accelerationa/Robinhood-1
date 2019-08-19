@@ -3,6 +3,7 @@
 #Standard libraries
 import logging
 import warnings
+from pathlib import Path 
 
 from enum import Enum
 
@@ -43,6 +44,8 @@ class Robinhood:
     headers = None
     auth_token = None
     refresh_token = None
+    # TODO: this is hard coding the device ID
+    device_token = "bff1667a-7fd9-4058-aeaf-a3da412ad5f0"
 
     logger = logging.getLogger('Robinhood')
     logger.addHandler(logging.NullHandler())
@@ -80,8 +83,10 @@ class Robinhood:
     def login_prompt(self):  # pragma: no cover
         """Prompts user for username and password and calls login() """
 
-        username = input("Username: ")
-        password = getpass.getpass()
+        file = open(str(Path.home()) + '/.robinhood/cred', 'r')
+        cred = file.read().splitlines()
+        username = cred[0]
+        password = cred[1]
 
         return self.login(username=username, password=password)
 
@@ -106,22 +111,74 @@ class Robinhood:
             'password': password,
             'username': self.username,
             'grant_type': 'password',
-            'client_id': self.client_id
+            'client_id': self.client_id,
+            "expires_in": "86400",
+            "scope": "internal",
+            "device_token": self.device_token,
+            "challenge_type": "sms"
         }
 
-        if mfa_code:
-            payload['mfa_code'] = mfa_code
-        try:
-            res = self.session.post(endpoints.login(), data=payload, timeout=15)
-            res.raise_for_status()
-            data = res.json()
-        except requests.exceptions.HTTPError:
-            raise RH_exception.LoginFailed()
+        if mfa_code == None:
+            response = self.session.post(endpoints.login(), data=payload, timeout=15)
+            data = response.json()
 
-        if 'mfa_required' in data.keys():           # pragma: no cover
-            mfa_code = input("MFA: ")
-            return self.login(username,password,mfa_code)
+            if 'challenge' not in data.keys():
+                response.raise_for_status()
+        else:
+            headers={"X-ROBINHOOD-CHALLENGE-RESPONSE-ID" : challenge_id}, 
+            try:
+                challenge_id = self.challenge_id
 
+                assert challenge_id != None
+                code_verification_payload = {
+                    "response": code
+                }
+
+                code_verification_response = self.session.post(endpoints.robinhood_code(challenge_id), data=code_verification_payload, timeout=15)
+                
+                print("Challenge info: " + code_verification_response.json())
+
+                if code_verification_response.json().get('status') != 'validated':
+                    raise Exception('Wrong status!')
+                
+                code_verification_response.raise_for_status()
+
+                response = self.session.post(endpoints.login(), data=payload, 
+                    headers=headers, 
+                    timeout=15
+                )
+                
+                data = response.json()
+
+                print("Login info:")
+                print(data)
+
+                response.raise_for_status()
+
+            except requests.exceptions.HTTPError:
+                raise RH_exception.LoginFailed()
+
+        
+
+        # When challenge is issued
+        if 'challenge' in data.keys():
+            try:
+                challenge = response.json().get('challenge')
+                if challenge == None:
+                    raise Exception("Unable to issue challenge. " + response.json())
+                
+                challenge_id = challenge.get('id')
+                if challenge_id == None:
+                    raise Exception("Challenge does not have an ID. " + response.json())
+
+                self.challenge_id = challenge_id
+
+                mfa = input('Robinhood MFA Code: ')
+                return self.login(username, password, mfa)
+            except requests.exceptions.HTTPError:
+                raise RH_exception.LoginFailed()
+
+        # When you set up new token or to refresh your token
         if 'access_token' in data.keys() and 'refresh_token' in data.keys():
             self.auth_token = data['access_token']
             self.refresh_token = data['refresh_token']

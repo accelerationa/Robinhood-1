@@ -1,72 +1,7 @@
-# Robinhood
+# curl https://api.robinhood.com/challenge/053dc3f1-661f-40fe-9d40-667dc3f25ed9/respond/ -H "Content-Type: application/json" -d  '{"response":"467910"}'
+# https://github.com/Jamonek/Robinhood
+# https://github.com/Jamonek/Robinhood/issues/176
 
-[![Join the chat at https://gitter.im/J-Robinhood/Lobby](https://badges.gitter.im/J-Robinhood/Lobby.svg)](https://gitter.im/J-Robinhood/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-Python Framework to make trades with Robinhood Private API.
-See this [blog post](https://medium.com/@rohanpai25/reversing-robinhood-free-accessible-automated-stock-trading-f40fba1e7d8b).
 
-## Current Features 
-- Placing buy orders (`Robinhood.place_buy_order`)
-- Placing sell order (`Robinhood.place_sell_order`)
-- Fetch and cancel orders (`Robinhood.order_history` and `Robinhood.cancel_order`)
-- Quote information (`Robinhood.quote_data`)
-- User portfolio data (`Robinhood.portfolios`)
-- User positions data (`Robinhood.positions`)
-- More coming soon
-
-### How To Install:
-Clone the repository into your project directory using:
-
-    git clone https://github.com/Jamonek/Robinhood
-
-Then navigate to the cloned directory, where `setup.py` is located. Now run the following to install:
-
-    pip install .
-    
-### Converting to Python 3
-Project will work on both python 2 and python 3
-
-### How to Use (see [example.py](https://github.com/Jamonek/Robinhood/blob/master/docs/example.py))
-
-    from Robinhood import Robinhood
-    my_trader = Robinhood()
-    logged_in = my_trader.login(username="USERNAME HERE", password="PASSWORD HERE")
-    stock_instrument = my_trader.instruments("GEVO")[0]
-    quote_info = my_trader.quote_data("GEVO")
-    buy_order = my_trader.place_buy_order(stock_instrument, 1)
-    sell_order = my_trader.place_sell_order(stock_instrument, 1)
-
-### Data returned
-* Quote data
-  + Ask Price
-  + Ask Size
-  + Bid Price
-  + Bid Size
-  + Last trade price
-  + Previous close
-  + Previous close date
-  + Adjusted previous close
-  + Trading halted
-  + Updated at
-  + Historical Price
-* User portfolio data
-  + Adjusted equity previous close
-  + Equity
-  + Equity previous close
-  + Excess margin
-  + Extended hours equity
-  + Extended hours market value
-  + Last core equity
-  + Last core market value
-  + Market value
-  + Order history
-  + Dividend history
-* User positions data
-  + Securities owned
-* News
-
-------------------
-
-# Related
-
-* [robinhood-ruby](https://github.com/rememberlenny/robinhood-ruby) - RubyGem for interacting with Robinhood API
-* [robinhood-node](https://github.com/aurbano/robinhood-node) - NodeJS module to make trades with Robinhood Private API
+# This one works for getting challenge
+# curl -v https://api.robinhood.com/oauth2/token/  -H "Content-Type: application/json" -d '{"password": {password}, "username": {username}, "grant_type": "password", "client_id": "c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS", "expires_in": "86400", "scope": "internal", "device_token": "29106c90-e38d-42e5-9dee-2ac86c46656f", "challenge_type": "sms"}'

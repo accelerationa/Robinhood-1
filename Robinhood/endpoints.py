@@ -3,6 +3,9 @@ api_url = "https://api.robinhood.com"
 def login():
     return api_url + "/oauth2/token/"
 
+def robinhood_code(challenge_id):
+    return api_url + "/challenge/" + challenge_id + "/respond/"
+
 def logout():
     return api_url + "/oauth2/revoke_token/"
 
